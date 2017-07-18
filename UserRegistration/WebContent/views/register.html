@@ -1,0 +1,852 @@
+
+<!-- <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+</head>
+<body>
+
+<table class="ds_box" cellpadding="0" cellspacing="0" id="ds_conclass" style="display: none;">
+<tr><td id="ds_calclass">
+</td></tr>
+</table>
+<script type="text/javascript">
+// Project: Dynamic Date Selector (DtTvB) - 2006-03-16
+// Script featured on JavaScript Kit- http://www.javascriptkit.com
+// Code begin...
+// Set the initial date.
+var ds_i_date = new Date();
+ds_c_month = ds_i_date.getMonth() + 1;
+ds_c_year = ds_i_date.getFullYear();
+
+// Get Element By Id
+function ds_getel(id) {
+	return document.getElementById(id);
+}
+
+// Get the left and the top of the element.
+function ds_getleft(el) {
+	var tmp = el.offsetLeft;
+	el = el.offsetParent
+	while(el) {
+		tmp += el.offsetLeft;
+		el = el.offsetParent;
+	}
+	return tmp;
+}
+function ds_gettop(el) {
+	var tmp = el.offsetTop;
+	el = el.offsetParent
+	while(el) {
+		tmp += el.offsetTop;
+		el = el.offsetParent;
+	}
+	return tmp;
+}
+
+// Output Element
+var ds_oe = ds_getel('ds_calclass');
+// Container
+var ds_ce = ds_getel('ds_conclass');
+
+// Output Buffering
+var ds_ob = ''; 
+function ds_ob_clean() {
+	ds_ob = '';
+}
+function ds_ob_flush() {
+	ds_oe.innerHTML = ds_ob;
+	ds_ob_clean();
+}
+function ds_echo(t) {
+	ds_ob += t;
+}
+
+var ds_element; // Text Element...
+
+var ds_monthnames = [
+'January', 'February', 'March', 'April', 'May', 'June',
+'July', 'August', 'September', 'October', 'November', 'December'
+]; // You can translate it for your language.
+
+var ds_daynames = [
+'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'
+]; // You can translate it for your language.
+
+// Calendar template
+function ds_template_main_above(t) {
+	return '<table cellpadding="3" cellspacing="1" class="ds_tbl">'
+	     + '<tr>'
+		 + '<td class="ds_head" style="cursor: pointer" onclick="ds_py();">&lt;&lt;</td>'
+		 + '<td class="ds_head" style="cursor: pointer" onclick="ds_pm();">&lt;</td>'
+		 + '<td class="ds_head" style="cursor: pointer" onclick="ds_hi();" colspan="3">[Close]</td>'
+		 + '<td class="ds_head" style="cursor: pointer" onclick="ds_nm();">&gt;</td>'
+		 + '<td class="ds_head" style="cursor: pointer" onclick="ds_ny();">&gt;&gt;</td>'
+		 + '</tr>'
+	     + '<tr>'
+		 + '<td colspan="7" class="ds_head">' + t + '</td>'
+		 + '</tr>'
+		 + '<tr>';
+}
+
+function ds_template_day_row(t) {
+	return '<td class="ds_subhead">' + t + '</td>';
+	// Define width in CSS, XHTML 1.0 Strict doesn't have width property for it.
+}
+
+function ds_template_new_week() {
+	return '</tr><tr>';
+}
+
+function ds_template_blank_cell(colspan) {
+	return '<td colspan="' + colspan + '"></td>'
+}
+
+function ds_template_day(d, m, y) {
+	return '<td class="ds_cell" onclick="ds_onclick(' + d + ',' + m + ',' + y + ')">' + d + '</td>';
+	// Define width the day row.
+}
+
+function ds_template_main_below() {
+	return '</tr>'
+	     + '</table>';
+}
+
+// This one draws calendar...
+function ds_draw_calendar(m, y) {
+	// First clean the output buffer.
+	ds_ob_clean();
+	// Here we go, do the header
+	ds_echo (ds_template_main_above(ds_monthnames[m - 1] + ' ' + y));
+	for (i = 0; i < 7; i ++) {
+		ds_echo (ds_template_day_row(ds_daynames[i]));
+	}
+	// Make a date object.
+	var ds_dc_date = new Date();
+	ds_dc_date.setMonth(m - 1);
+	ds_dc_date.setFullYear(y);
+	ds_dc_date.setDate(1);
+	if (m == 1 || m == 3 || m == 5 || m == 7 || m == 8 || m == 10 || m == 12) {
+		days = 31;
+	} else if (m == 4 || m == 6 || m == 9 || m == 11) {
+		days = 30;
+	} else {
+		days = (y % 4 == 0) ? 29 : 28;
+	}
+	var first_day = ds_dc_date.getDay();
+	var first_loop = 1;
+	// Start the first week
+	ds_echo (ds_template_new_week());
+	// If sunday is not the first day of the month, make a blank cell...
+	if (first_day != 0) {
+		ds_echo (ds_template_blank_cell(first_day));
+	}
+	var j = first_day;
+	for (i = 0; i < days; i ++) {
+		// Today is sunday, make a new week.
+		// If this sunday is the first day of the month,
+		// we've made a new row for you already.
+		if (j == 0 && !first_loop) {
+			// New week!!
+			ds_echo (ds_template_new_week());
+		}
+		// Make a row of that day!
+		ds_echo (ds_template_day(i + 1, m, y));
+		// This is not first loop anymore...
+		first_loop = 0;
+		// What is the next day?
+		j ++;
+		j %= 7;
+	}
+	// Do the footer
+	ds_echo (ds_template_main_below());
+	// And let's display..
+	ds_ob_flush();
+	
+	// Scroll it into view.
+	//ds_ce.scrollIntoView();
+}
+
+// A function to show the calendar.
+// When user click on the date, it will set the content of t.
+function ds_sh123(t) {
+	// Set the element to set...
+	ds_element = t;
+	// Make a new date, and set the current month and year.
+	var ds_sh_date = new Date();
+	ds_c_month = ds_sh_date.getMonth() + 1;
+	ds_c_year = ds_sh_date.getFullYear();
+	// Draw the calendar
+	ds_draw_calendar(ds_c_month, ds_c_year);
+	// To change the position properly, we must show it first.
+	ds_ce.style.display = '';
+	// Move the calendar container!
+	
+	//the_left = ds_getleft(t);
+	//the_top = ds_gettop(t) + t.offsetHeight;
+	//ds_ce.style.left = the_left + 'px';
+	//ds_ce.style.top = the_top + 'px';
+	// Scroll it into view.
+	//ds_ce.scrollIntoView();
+}
+
+function ds_sh(t) {
+	// Set the element to set...
+	ds_element = t;
+	// Make a new date, and set the current month and year.
+	var ds_sh_date = new Date();
+	ds_c_month = ds_sh_date.getMonth() + 1;
+	ds_c_year = ds_sh_date.getFullYear();
+	// Draw the calendar
+	ds_draw_calendar(ds_c_month, ds_c_year);
+	// To change the position properly, we must show it first.
+	ds_ce.style.display = '';
+	// Move the calendar container!
+	
+	the_left = ds_getleft(t);
+	the_top = ds_gettop(t) + t.offsetHeight;
+	ds_ce.style.left = the_left + 'px';
+	ds_ce.style.top = the_top + 'px';
+	// Scroll it into view.
+	//ds_ce.scrollIntoView();
+}
+
+// Hide the calendar.
+function ds_hi() {
+	ds_ce.style.display = 'none';
+}
+
+// Moves to the next month...
+function ds_nm() {
+	// Increase the current month.
+	ds_c_month ++;
+	// We have passed December, let's go to the next year.
+	// Increase the current year, and set the current month to January.
+	if (ds_c_month > 12) {
+		ds_c_month = 1; 
+		ds_c_year++;
+	}
+	// Redraw the calendar.
+	ds_draw_calendar(ds_c_month, ds_c_year);
+}
+
+// Moves to the previous month...
+function ds_pm() {
+	ds_c_month = ds_c_month - 1; // Can't use dash-dash here, it will make the page invalid.
+	// We have passed January, let's go back to the previous year.
+	// Decrease the current year, and set the current month to December.
+	if (ds_c_month < 1) {
+		ds_c_month = 12; 
+		ds_c_year = ds_c_year - 1; // Can't use dash-dash here, it will make the page invalid.
+	}
+	// Redraw the calendar.
+	ds_draw_calendar(ds_c_month, ds_c_year);
+}
+
+// Moves to the next year...
+function ds_ny() {
+	// Increase the current year.
+	ds_c_year++;
+	// Redraw the calendar.
+	ds_draw_calendar(ds_c_month, ds_c_year);
+}
+
+// Moves to the previous year...
+function ds_py() {
+	// Decrease the current year.
+	ds_c_year = ds_c_year - 1; // Can't use dash-dash here, it will make the page invalid.
+	// Redraw the calendar.
+	ds_draw_calendar(ds_c_month, ds_c_year);
+}
+
+// Format the date to output.
+function ds_format_date(d, m, y) {
+	// 2 digits month.
+	m2 = '00' + m;
+	m2 = m2.substr(m2.length - 2);
+	// 2 digits day.
+	d2 = '00' + d;
+	d2 = d2.substr(d2.length - 2);
+	// YYYY-MM-DD
+	//sanjay
+	//return y + '-' + m2 + '-' + d2;
+	return d2 + '-' + m2 + '-' + y;
+}
+
+// When the user clicks the day.
+function ds_onclick(d, m, y) {
+	// Hide the calendar.
+	ds_hi();
+	// Set the value of it, if we can.
+	if (typeof(ds_element.value) != 'undefined') {
+		ds_element.value = ds_format_date(d, m, y);
+	// Maybe we want to set the HTML in it.
+	} else if (typeof(ds_element.innerHTML) != 'undefined') {
+		ds_element.innerHTML = ds_format_date(d, m, y);
+	// I don't know how should we display it, just alert it to user.
+	} else {
+		alert (ds_format_date(d, m, y));
+	}
+}
+
+// And here is the end.
+
+// ]]> -->
+</script>
+
+<title>ITEC :Indian Technical and Economic Cooperation</title>
+
+<script type="text/javascript" src="js/validation.js"></script>
+<script src="js/datetimepicker_css.js" /></script>
+<script type="text/javascript" >
+	</script>
+	</head>
+	<body>
+	<form action="Register" method="post">
+							<tr>
+								<td colspan="4"><p align="left">
+										<strong><span class="formlabels"
+											style="font-style: italic; color: grey">Personal Details</span>
+										</strong>
+									</p></td>
+							</tr>
+							<tr>
+								<td><span class="formlabels">Title <font color="red"> * </font>
+								</span>
+								
+								<td colspan="1"><select name="title" id="title"
+									class="formlabels combo" tabindex="1" onBlur="showTitle()">
+										<option value="0">Select Title</option>
+									  												<option value="Mr">Mr</option>
+																								<option value="Ms">Ms</option>
+																								<option value="Mrs">Mrs</option>
+																								<option value="Dr">Dr</option>
+																						</select>
+								</td>
+							</tr>
+							<tr>
+								<td><span class="formlabels">Name<font color="red"> * </font></span>
+								
+								<td><input type="text" id="name" name="name"
+									class="mandatoryTbox" tabindex="2"
+									onblur="showName(); return isValidName(this.value)"
+									maxlength="100"
+									value=""/> 
+									<input type="hidden" id="financialYear" name="financialYear" /> 
+									<input type="hidden" id="courseid" name="courseid" /> 
+									<input type="hidden" id="streamid" name="streamid" /> 
+									<input type="hidden" id="countrymasterid" name="countrymasterid" /> 
+									<input type="hidden" id="secttMasterid" name="secttMasterid" />
+								</td>
+
+								<td><span class="formlabels">Surname<font color="red"> * </font></span>
+								
+								<td><input type="text" id="surname" name="surname"
+									class="mandatoryTbox"
+									onblur="showSurname(); return isValidSurName(this.value)"
+									tabindex="3" maxlength="100"
+									value=""/></td>
+							</tr>
+							<tr>
+								<td><span class="formlabels">Gender<font color="red"> * </font>
+								</span>
+								
+								<td colspan="1"><select path="gender" id="gender" name="gender"
+									class="formlabels combo" tabindex="4" onBlur="showGender()">
+										<option value="0">Select Gender</option>
+										
+												<option value="Male">Male</option>
+												
+												<option value="Female">Female</option>
+												
+												<option value="Other">Other</option>
+												
+
+								</select></td>
+
+								<td><span class="formlabels">Marital Status<font color="red"> *</font></span>
+								
+								<td colspan="1"><select path="maritalStatus" id="maritalStatus"
+									name="maritalStatus" class="formlabels combo" tabindex="5"
+									onblur="showMaritalStatus()">
+										<option value="0">Select Marital Status</option>
+											
+													<option value="Single">Single</option>
+													
+													<option value="Married">Married</option>
+													
+													<option value="Divorcee">Divorcee</option>
+													
+													<option value="Widow/Widower">Widow/Widower</option>
+																						</select>
+								</td>
+							</tr>
+							<tr>
+								<td><span class="formlabels">Date of Birth<font color="red"> * </font></span></td>
+								<td><input type="text" id="dob" name="dob" class="mandatoryTbox"
+									tabindex="6" onBlur="calculateAge();showDOB()"
+									onClick="ds_sh(this);" readonly="true" style='cursor: text'
+									style='background-color:#FCF5D8;color:#000000;'
+									value="" /> <input type="hidden" name="age" id="age"
+									value="" /></td>
+								<td><span class="formlabels">Upload Image (Max size- 150 KB in
+										.jpg, .jpeg format, only passport size photo should be
+										uploaded)<font color="red"> * </font>
+								</span></td>
+								<td><input type="file"
+									accept="image/jpg, image/JPG,image/JPEG, image/jpeg"
+									name="photo1" id="photo1" class="mandatoryTbox" tabindex="7"
+									onChange="load_image(this.id, this.value)" />
+							
+							</tr>
+							<tr>
+								<td><span class="formlabels">Passport Number </span>
+								
+								<td><input type="text" name="passportNumber" id="passportNumber"
+									name="passportNumber"
+									onblur="showPassportNo(); return isValidPassportNo(this.value)"
+									value="" class="mandatoryTbox" tabindex="8" maxlength="12" />
+								
+								<td><span class="formlabels">Passport Issue Date </span>
+								
+								<td><input type="text" name="passportIssueDate"
+									id="passportIssueDate" tabindex="9" onblur="showIssueDate()"
+									onClick="ds_sh(this);" readonly="true" style='cursor: text'
+									style='background-color:#FCF5D8;color:#000000;'
+									class="mandatoryTbox"
+									value="" /></td>
+							</tr>
+							<tr>
+								<td><span class="formlabels">Place of Issuance</span>
+								
+								<td><input type="text" name="passportIssuePlace"
+									id="passportIssuePlace" class="mandatoryTbox" tabindex="10"
+									maxlength="100"
+									value="" onblur="showIssuePlace(); return  isValidPassportIssuePlace(this.value)" />
+								
+								<td><span class="formlabels"> Passport Expiry Date </span>
+								
+								<td><input type="text" name="passportExpiryDate" tabindex="11"
+									onClick="ds_sh(this);" readonly="true" style='cursor: text'
+									style='background-color:#FCF5D8;color:#000000;'
+									class="mandatoryTbox"
+									value=""
+									id="passportExpiryDate" /></td>
+							</tr>
+						</table>
+						<div align="center">
+							<table class="data" style="text-align: left; width: 98%;">
+								<thead>
+									<tr>
+										<th width="24%"></th>
+										<th width="26%" style="text-align: center;">Office</th>
+										<th width="24%"></th>
+										<th width="26%" style="text-align: center;">Residence</th>
+									</tr>
+								</thead>
+								<tr>
+
+									<td><span class="formlabels">Address<font color="red">*</font></span></td>
+									<td><input type="text" path="officeAddress"
+										name="officeAddress" id="officeAddress" class="mandatoryTbox"
+										tabindex="12" maxlength="200"
+										onBlur="showOfficeAddress(); return isValidOfficeAddress(this.value)"
+										value="" /></td>
+
+									<td><span class="formlabels">Address<font color="red">*</font>
+									</span></td>
+									<td><input type="text" name="residenceAddress" maxlength="200"
+										name="residenceAddress"
+										onblur="showResAddress(); return isValidResidenceAddress(this.value)"
+										id="residenceAddress" class="mandatoryTbox" tabindex="13"
+										value="" /></td>
+								</tr>
+								<tr>
+									<td><span class="formlabels">Telephone Number</span> <br> <span
+										class="formlabels">(Country Code - Number)</span>
+									
+									<td><input type="text" name="officePhoneCCode"
+										id="officePhoneCCode" maxlength="5"
+										class="verysmallmandatoryTbox" tabindex="14"
+										onBlur="showOfficePhoneCCode(); return isValidOfficephoneCode(this.value)"
+										value=""/> <input type="text" name="officePhone" id="officePhone"
+										onblur="showOfficePhone(); return isValidOfficephone(this.value)"
+										value="" class="smallmandatoryTbox1" tabindex="15" maxlength="12" /></td>
+
+
+									<td><span class="formlabels">Telephone Number<font color="red">
+												* </font></span> <br> <span class="formlabels">(Country Code
+											- Number)</span>
+									
+									<td><input type="text" name="residenceMobileNumberCCode"
+										id="residenceMobileNumberCCode" maxlength="5"
+										class="verysmallmandatoryTbox" tabindex="16"
+										onBlur="showResTelephoneCCode(); return isValidresidenceMobileNumberCCode(this.value)"
+										value=""/>
+
+										<input type="text" name="residenceMobileNumber"
+										id="residenceMobileNumber"
+										onblur="showResTelephone(); return isValidresidenceMobileNumber(this.value)"
+										value=""
+										class="smallmandatoryTbox1" tabindex="17" maxlength="12" /></td>
+								</tr>
+
+
+								<tr>
+									<td></td>
+									<td></td>
+									<td><span class="formlabels">Mobile Number<br> <span
+											class="formlabels">(Country Code - Number)</span>
+									</span></td>
+
+									<td><input type="text" path="officeMobileNumberCCode"
+										name="officeMobileNumberCCode" id="officeMobileNumberCCode"
+										class="verysmallmandatoryTbox" tabindex="18" maxlength="5"
+										onBlur="showOfficeMobileNoCCode(); return isValidofficeMobileNumberCCode(this.value)"
+										value=""/> 
+										
+										<input type="text" path="officeMobileNumber"
+										name="officeMobileNumber"
+										value=""
+										id="officeMobileNumber" class="smallmandatoryTbox1"
+										tabindex="19"
+										onBlur="showOfficeMobileNo(); return isValidofficeMobileNumber(this.value)"
+										maxlength="12" /></td>
+
+								</tr>
+
+								<tr>
+
+									<td><span class="formlabels">Fax</span><br> <span
+										class="formlabels">(Country Code - Area Code - Number)</span></td>
+
+									<td><input type="text" path="officeFaxCCode"
+										id="officeFaxCCode" name="officeFaxCCode"
+										class="verysmallmandatoryTbox" tabindex="20" maxlength="5"
+										onBlur="showOfficeFaxCCode(); return isValidofficeFaxCCode(this.value)"
+										value=""/> 
+										<input type="text" name="officeFaxACode"
+										id="officeFaxACode" class="verysmallmandatoryTbox"
+										tabindex="21" maxlength="5"
+										onBlur="showOfficeFaxACode(); return isValidofficeFaxACode(this.value)"
+										value=""/> 
+										<input type="text" id="officeFax"
+										name="officeFax"
+										value=""
+										class="smallmandatoryTbox" tabindex="22" maxlength="12"
+										onBlur="showOfficeFax(); return isValidofficeFax(this.value)" /></td>
+
+									<td><span class="formlabels">Fax</span><br> <span
+										class="formlabels">(Country Code - Area Code - Number)</span></td>
+									<td><input type="text" name="residenceFaxCCode"
+										name="residenceFaxCCode" id="residenceFaxCCode" maxlength="5"
+										class="verysmallmandatoryTbox"
+										value="" tabindex="23"
+										onblur="showResFaxCCode(); return isValidresidenceFaxCCode(this.value)" />
+										<input type="text" name="residenceFaxACode"
+										id="residenceFaxACode" maxlength="5"
+										class="verysmallmandatoryTbox" tabindex="24"
+										value=""
+										onBlur="showResFaxACode(); return isValidresidenceFaxACode(this.value)" />
+										<input type="text" name="residenceFax" id="residenceFax"
+										maxlength="12" class="smallmandatoryTbox" tabindex="25"
+										onblur="showResFax(); return isValidresidenceFax(this.value)"
+										value="" /></td>
+
+								</tr>
+
+
+
+								<tr>
+									<td><span class="formlabels">Email Id<font color="red"> * </font>
+									</span></td>
+									<td><input type="text" name="officeEmail" id="officeEmail"
+										maxlength="50"
+										onBlur="showOfficeEmail(); return validateEmail(this.value);"
+										maxlength="" class="mandatoryTbox" tabindex="26"
+										value="" /></td>
+
+									<td><span class="formlabels">Email Id<font color="red"> * </font><br /></span>
+										<span>(This will be used for further communications and as
+											userid for your account)</span>
+									
+									<td><input type="text" name="residenceEmail"
+										id="residenceEmail" class="mandatoryTbox" tabindex="27"
+										maxlength="50"
+										onblur="showEmail(); return validateEmail(this.value);"
+										maxlength="" autocomplete="off"
+										value=""
+										 /></td>
+								</tr>
+								<tr>
+									<td><span class="formlabels">Special dietary needs, if any </span></td>
+									<td><input type="text" path="splDietaryNeed"
+										name="splDietaryNeed" maxlength="100"
+										value="" 
+										id="splDietaryNeed" class="mandatoryTbox" tabindex="28"
+										onBlur="showSpecialDiet(); return isValidsplDietaryNeed(this.value) " /></td>
+									<td />
+									<td />
+								</tr>
+							</table>
+						</div>
+					</div>
+
+					<p align="left">
+						<strong><span class="formlabels">Person to be notified in case of
+								emergency</span> </strong>
+					</p>
+					<div align="center">
+						<table class="data" style="text-align: left; width: 98%;">
+							<thead>
+								<tr>
+									<th width="24%"></th>
+									<th width="26%" style="text-align: center;">Official Contact
+										Details</th>
+									<th width="24%"></th>
+									<th width="26%" style="text-align: center;">Personal / Family
+										Contact Details</th>
+								</tr>
+							</thead>
+							<tr>
+								<td><span class="formlabels">Name<font color="red"> * </font></span>
+								
+								<td><input type="text" path="emergencyOfficePersonName"
+									id="emergencyOfficePersonName" name="emergencyOfficePersonName"
+									maxlength="100" class="mandatoryTbox" tabindex="29"
+									onBlur="showEmergencyOfficePersonName(); return isValidemergencyOfficePersonName(this.value)"
+									value="" />
+								
+								<td><span class="formlabels">Name<font color="red"> * </font>
+								</span>
+								
+								<td><input type="text" path="emergencyPersonName" accept=""
+									value="" 
+									name="emergencyPersonName" id="emergencyPersonName"
+									class="mandatoryTbox" tabindex="30"
+									onBlur="showEmergencyPersonName(); return isValidemergencyPersonName(this.value)"
+									maxlength="100" />
+							
+							</tr>
+
+							<tr>
+								<td><span class="formlabels">Address<font color="red"> * </font>
+								</span></td>
+								<td><input type="text" path="emergencyPersonOfficialAddress"
+									name="emergencyPersonOfficialAddress"
+									id="emergencyPersonOfficialAddress" class="mandatoryTbox"
+									onblur="showEmergencyPersonOfficialAddress(); return isValidemergencyPersonOfficialAddress(this.value)"
+									tabindex="31" maxlength="200"
+									value="" /></td>
+								<td><span class="formlabels">Address<font color="red"> * </font>
+								</span></td>
+								<td><input type="text" path="emergencyPersonPersonalAddress"
+									name="emergencyPersonPersonalAddress"
+									value="" 
+									id="emergencyPersonPersonalAddress" class="mandatoryTbox"
+									onBlur="showEmergencyPersonPersonalAddress(); return isValidemergencyPersonPersonalAddress(this.value)"
+									tabindex="32" maxlength="200" /></td>
+							</tr>
+							<tr>
+								<td><span class="formlabels">Telephone Number</span><br> <br> <span
+									class="formlabels">(Country Code - Area Code - Number)</span></td>
+								<td><input type="text" path="emergencyPersonOfficialPhoneCCode"
+									value="" 
+									name="emergencyPersonOfficialPhoneCCode"
+									id="emergencyPersonOfficialPhoneCCode"
+									class="verysmallmandatoryTbox" tabindex="33" maxlength="5"
+									onblur="showEmergencyPersonOfficialPhoneCCode(); return isValidemergencyPersonOfficialPhoneCCode(this.value)" />
+
+									<input type="text" name="emergencyPersonOfficialPhoneACode"
+									id="emergencyPersonOfficialPhoneACode"
+									class="verysmallmandatoryTbox" tabindex="34" maxlength="5"
+									accept=""
+									onBlur="showEmergencyPersonOfficialPhoneACode(); return isValidemergencyPersonOfficialPhoneACode(this.value)"
+									value=""/> 
+									<input type="text"
+									value="" 
+									name="emergencyPersonOfficialPhone"
+									onBlur="showEmergencyPersonOfficialPhone(); return isValidEmergencyPersonOfficialPhone(this.value);"
+									id="emergencyPersonOfficialPhone" maxlength="12"
+									class="smallmandatoryTbox" tabindex="35" /></td>
+
+
+
+								<td><span class="formlabels">Telephone Number</span><br> <br> <span
+									class="formlabels">(Country Code - Area Code - Number)</span></td>
+								<td><input type="text" name="emergencyPersonPersonalPhoneCCode"
+									id="emergencyPersonPersonalPhoneCCode"
+									name="emergencyPersonPersonalPhoneCCode"
+									class="verysmallmandatoryTbox" tabindex="36" maxlength="5"
+									onblur="showEmergencyPersonPersonalPhoneCCode(); return isValidEmergencyPersonPersonalPhoneCCode(this.value)"
+									value=""/> 
+									<input type="text"
+									name="emergencyPersonPersonalPhoneACode"
+									id="emergencyPersonPersonalPhoneACode"
+									class="verysmallmandatoryTbox" tabindex="37" maxlength="5"
+									onBlur="showEmergencyPersonPersonalPhoneACode(); return isValidEmergencyPersonPersonalPhoneACode(this.value)"
+									value=""/> 
+									<input type="text" name="emergencyPersonPersonalPhone"
+									id="emergencyPersonPersonalPhone" maxlength="12"
+									class="smallmandatoryTbox" tabindex="38"
+									value="" onblur="showEmergencyPersonPersonalPhone(); return isValidEmergencyPersonPersonalPhone(this.value)" />
+								</td>
+							</tr>
+							<tr>
+								<td><span class="formlabels">Mobile Number<font color="red"> * </font>
+										<br> <br> <span class="formlabels">(Country Code - Number)</span></span></td>
+								<td><input type="text"
+									name="emergencyPersonOfficialMobileNumberCCode"
+									value="" 
+									id="emergencyPersonOfficialMobileNumberCCode"
+									class="verysmallmandatoryTbox" tabindex="39" maxlength="5"
+									onBlur="showEmergencyPersonOfficialMobileNumberCCode(); return isValidEmergencyPersonOfficialMobileNumberCCode(this.value)" />
+									<input type="text" name="emergencyPersonOfficialMobileNumber"
+									id="emergencyPersonOfficialMobileNumber"
+									class="smallmandatoryTbox1" tabindex="40" maxlength="12"
+									value="" 
+									onblur="showEmergencyPersonOfficialMobileNumber(); return isValidEmergencyPersonOfficialMobileNumber(this.value)" /></td>
+								<td><span class="formlabels">Mobile Number<font color="red"> * </font>
+										<br> <br> <span class="formlabels">(Country Code - Number)</span></span></td>
+
+
+
+								<td><input type="text"
+									name="emergencyPersonPersonalMobileNumberCCode"
+									id="emergencyPersonPersonalMobileNumberCCode"
+									class="verysmallmandatoryTbox" tabindex="41" maxlength="5"
+									onblur="showEmergencyPersonPersonalMobileNumberCCode();return isValidEmergencyPersonPersonalMobileNumberCCode(this.value)"
+									value=""/> 
+									<input type="text"
+									name="emergencyPersonPersonalMobileNumber"
+									id="emergencyPersonPersonalMobileNumber"
+									class="smallmandatoryTbox1" tabindex="42" maxlength="12"
+									onblur="showEmergencyPersonPersonalMobileNumber();return isValidEmergencyPersonPersonalMobileNumber(this.value)"
+									value="" /></td>
+							</tr>
+							<tr>
+								<td><span class="formlabels">Fax Number</span><br> <br> <span
+									class="formlabels">(Country Code - Area Code - Number)</span></td>
+								<td><input type="text" name="emergencyPersonOfficialFaxCCode"
+									id="emergencyPersonOfficialFaxCCode"
+									class="verysmallmandatoryTbox" tabindex="43" maxlength="5"
+									onblur="showEmergencyPersonOfficialFaxCCode(); return isValidEmergencyPersonOfficialFaxCCode(this.value)"
+									value=""/> 
+									<input type="text"
+									name="emergencyPersonOfficialFaxACode"
+									id="emergencyPersonOfficialFaxACode"
+									class="verysmallmandatoryTbox" tabindex="44" maxlength="5"
+									onblur="showEmergencyPersonOfficialFaxACode(); return isValidEmergencyPersonOfficialFaxACode(this.value)"
+									value=""/> <input type="text" name="emergencyPersonOfficialFax"
+									id="emergencyPersonOfficialFax" maxlength="12"
+									class="smallmandatoryTbox" tabindex="45"
+									onblur="showEmergencyPersonOfficialFax(); return isValidEmergencyPersonOfficialFax(this.value)"
+									value="" /></td>
+
+								<td><span class="formlabels">Fax Number</span><br> <br> <span
+									class="formlabels">(Country Code - Area Code - Number)</span></td>
+								<td><input type="text" path="emergencyPersonPersonalFaxCCode"
+									name="emergencyPersonPersonalFaxCCode"
+									id="emergencyPersonPersonalFaxCCode"
+									class="verysmallmandatoryTbox" tabindex="46" maxlength="5"
+									value=""
+									onblur="showEmergencyPersonPersonalFaxCCode(); return isValidEmergencyPersonPersonalFaxCCode(this.value)" />
+									<input type="text" path="emergencyPersonPersonalFaxACode"
+									name="emergencyPersonPersonalFaxACode"
+									id="emergencyPersonPersonalFaxACode"
+									class="verysmallmandatoryTbox" tabindex="47" maxlength="5"
+									value=""
+									onblur="showEmergencyPersonPersonalFaxACode(); return isValidEmergencyPersonPersonalFaxACode(this.value)" />
+									<input type="text" path="emergencyPersonPersonalFax"
+									name="emergencyPersonPersonalFax"
+									id="emergencyPersonPersonalFax" maxlength="12"
+									class="smallmandatoryTbox" tabindex="48"
+									value="" 
+									onblur="showEmergencyPersonPersonalFax(); return isValidEmergencyPersonPersonalFax(this.value)" /></td>
+							</tr>
+							<tr>
+								<td><span class="formlabels">Email Id<font color="red"> * </font>
+								</span></td>
+								<td><input type="text" name="emergencyPersonOfficialEmail"
+									value="" 
+									id="emergencyPersonOfficialEmail" class="mandatoryTbox"
+									autocomplete="off" tabindex="49"
+									onBlur="showEmergencyPersonOfficialEmail(); return validateEmail(this.value);"
+									maxlength="50" /></td>
+								<td><span class="formlabels">Email Id<font color="red"> * </font>
+								</span></td>
+								<td><input type="text" name="emergencyPersonPersonalEmail"
+									accept=""
+									value="" 
+									id="emergencyPersonPersonalEmail" class="mandatoryTbox"
+									autocomplete="off" tabindex="50"
+									onBlur="showEmergencyPersonPersonalEmail(); return validateEmail(this.value);"
+									maxlength="50" /></td>
+							</tr>
+						</table>
+		<!-- 
+		Title: <select name="title">
+			<option>Mr</option>
+			<option>Ms</option>
+			<option>Mrs</option>
+			<option>Dr</option>
+		</select> <br />
+		<br /> Name:<input type="text" name="name" /><br />
+		<br /> Sur Name:<input type="text" name="surname" /><br />
+		<br /> Gender: <select name="gender">
+			<option>Male</option>
+			<option>Female</option>
+		</select><br />
+		<br /> Marital Status: <select name="maritalStatus">
+			<option>Single</option>
+			<option>Married</option>
+			<option>Divorcee</option>
+			<option>Widow/Widower</option>
+		</select><br />
+		<br /> Date of Birth:<input name="dob" type="date"><br />
+		<br /> Upload Image (Max size- 150 KB in .jp, .jpeg format, only
+		passport size photo should be uploaded):
+		 <input type="file"	name="photo1" size="100">
+		  Passport Number:<input type="text" name="passportNumber" /><br />
+		  Passport Issue Date:<input type="text" name="passportIssueDate" /><br />
+		  Place of Issue:<input type="text" name="placeOfIssue" /><br />
+		  Passport ExpiryDate:<input type="text" name="passportExpiryDate" /><br />
+		  Office: <br />
+		  Address:<input type="text" name="officeAddress" /><br />
+		  Telephone Number (Country Code - Number):
+		  <input type="text" name="officePhoneCCode" /><input type="text" name="officePhone" /><br /><br />
+		  Fax (Country Code - Area Code - Number):<input type="text" name="officeFaxCCode" /><input type="text" name="officeFaxACode" /><input type="text" name="officeFax" /><br /><br />
+		  <br /> Email Id:<input type="text" name="officeEmail" /><br />
+		  Residence: <br />
+		  Address:<input type="text" name="residenceAddress" /><br />
+		  Telephone Number (Country Code - Number):
+		  <input type="text" name="residencePhoneCCode" /><input type="text" name="residencePhone" /><br /><br />
+		  Mobile Number (Country Code - Number): <input type="text" name="residenceMobileNumberCCode" /><input type="text" name="residenceMobileNumber" /><br /><br />
+		  Fax (Country Code - Area Code - Number):<input type="text" name="residenceFaxCCode" /><input type="text" name="residenceFaxACode" /><input type="text" name="residenceFax" /><br /><br />
+		  <br /> Email Id:<input type="text" name="residenceEmail" /><br />
+		  Special Dietary Needs (If any): <input type="text" name="splDietaryNeed" /><br />
+		  Person to be notified in case of emergency:
+		  Official Contact Details:
+		  Name:  <br /> <input type="text" name="emergencyOfficePersonName" /><br />
+		  Address:<input type="text" name="emergencyPersonOfficialAddress" /><br />
+		  Telephone Number (Country Code - Number):
+		  <input type="text" name="emergencyPersonOfficialPhoneCCode" /><input type="text" name="emergencyPersonOfficialPhoneACode" /><input type="text" name="emergencyPersonOfficialPhone" /><br /><br />
+		  Mobile Number (Country Code - Number):
+		  <input type="text" name="emergencyPersonOfficialMobileNumberCCode" /><input type="text" name="emergencyPersonOfficialMobileNumber" /><br /><br />
+		  Fax (Country Code - Area Code - Number):<input type="text" name="emergencyPersonOfficialFaxCCode" /><input type="text" name="emergencyPersonOfficialFaxACode" /><input type="text" name="emergencyPersonOfficialFax" /><br /><br />
+		  <br /> Email Id:<input type="text" name="emergencyPersonOfficialEmail" /><br />
+		  Personal Contact Details:
+		  Name:  <br /> <input type="text" name="emergencyPersonName" /><br />
+		  Address:<input type="text" name="emergencyPersonPersonalAddress" /><br />
+		  Telephone Number (Country Code - Number):
+		  <input type="text" name="emergencyPersonPersonalPhoneCCode" /><input type="text" name="emergencyPersonPersonalPhoneACode" /><input type="text" name="emergencyPersonPersonalPhone" /><br /><br />
+		  Fax (Country Code - Area Code - Number):<input type="text" name="emergencyPersonPersonalFaxCCode" /><input type="text" name="emergencyPersonPersonalFaxACode" /><input type="text" name="emergencyPersonPersonalFax" /><br /><br />
+		  Mobile Number (Country Code - Number):
+		  <input type="text" name="emergencyPersonPersonalMobileNumberCCode" /><input type="text" name="emergencyPersonPersonalMobileNumber" /><br /><br />
+		  <br /> Email Id:<input type="text" name="emergencyPersonPersonalEmail" /><br />
+		<br /> <br />-->
+		<br /> <input type="submit" value="register" />
+
+	</form>
+</body>
+</html>
